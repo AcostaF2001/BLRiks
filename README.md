@@ -718,6 +718,37 @@ docker compose up --build -d
 - Swagger permite inspeccionar la API de manera documentada
 
 
+---
+
+## Desicion del Diseño
+
+- Decidi usar un diseño modular para el desarrollo de la aplicacion,
+debido a que a mi parecer es mucho mas sencillo trabajar esto se debe a
+que puedes encontrar en que modulo esta con x codigo, eso ayuda a un 
+mejor escalamiento y soporte
+- En la parte de la interfaz tome en cuenta un diseño mas moderno 
+enfocado en una libreria de react que me gusta mucho que es 
+material ui, a mi parecer da un estilo mas serio y comodo para 
+el usuario
+
+---
+
+---
+
+## Mejoras futuras sugeridas
+
+- interfaz frontend dedicada en React
+- filtros adicionales por estado y fecha
+- exportación de resultados
+- creación de usuarios desde `ADMIN_ORG`
+- mejor sistema de permisos por módulo
+- dashboard con métricas por organización
+- pruebas automáticas unitarias e integración
+- despliegue productivo con Gunicorn/Nginx
+- Tambien se Podria implementar IA tipo Gemini para un proceso mas acertado de analisis 
+
+---
+
 ## Estado actual del proyecto
 
 El proyecto ya permite:
@@ -738,4 +769,4 @@ El proyecto ya permite:
 
 ## Autor
 
-Proyecto desarrollado por Andres Felipe Acosta Lozada.
+Proyecto desarrollado como solución para assessment técnico Full Stack / DevOps.
