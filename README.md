@@ -769,4 +769,5 @@ El proyecto ya permite:
 
 ## Autor
 
-Proyecto desarrollado como solución para assessment técnico Full Stack / DevOps.
+Proyecto desarrollado por Andres Felipe Acosta.
+
