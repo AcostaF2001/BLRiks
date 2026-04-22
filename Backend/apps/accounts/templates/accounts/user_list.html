@@ -1,0 +1,524 @@
+{% extends "base.html" %}
+{% load querystring_tags %}
+
+{% block title %}Usuarios{% endblock %}
+
+{% block extra_css %}
+<style>
+    .users-container {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .users-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        padding: 1.5rem 2rem;
+    }
+
+    .users-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    /* Filtros */
+    .filters-section {
+        background: #f8fafc;
+        padding: 1.25rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .filters-form {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr) auto;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .filter-group label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #1e3a8a;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .filter-group input,
+    .filter-group select {
+        padding: 0.625rem 0.875rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        background: #ffffff;
+        color: #334155;
+    }
+
+    .filter-group select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        padding-right: 2rem;
+    }
+
+    .filter-group input:focus,
+    .filter-group select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .filter-group input::placeholder {
+        color: #94a3b8;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-filter {
+        padding: 0.625rem 1.25rem;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+    }
+
+    .btn-clear {
+        padding: 0.625rem 1.25rem;
+        background: #ffffff;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-clear:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #475569;
+    }
+
+    /* Tabla */
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .users-table thead {
+        background: #f1f5f9;
+    }
+
+    .users-table th {
+        padding: 0.875rem 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #1e3a8a;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        white-space: nowrap;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .users-table td {
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #475569;
+        vertical-align: middle;
+    }
+
+    .users-table tbody tr {
+        transition: background 0.15s ease;
+    }
+
+    .users-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .users-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Celdas especiales */
+    .cell-id {
+        font-weight: 600;
+        color: #1e3a8a;
+    }
+
+    .cell-username {
+        font-weight: 500;
+        color: #334155;
+    }
+
+    .cell-email {
+        color: #64748b;
+    }
+
+    .cell-org {
+        color: #475569;
+    }
+
+    .cell-org.empty {
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    /* Badge tipo usuario */
+    .user-type-badge {
+        display: inline-block;
+        padding: 0.25rem 0.625rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .type-admin {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .type-manager {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .type-user {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    /* Badge superusuario */
+    .superuser-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        font-size: 0.75rem;
+    }
+
+    .superuser-yes {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .superuser-no {
+        background: #f1f5f9;
+        color: #94a3b8;
+    }
+
+    /* Boton accion */
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.75rem;
+        background: #eff6ff;
+        color: #1e40af;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-action:hover {
+        background: #dbeafe;
+    }
+
+    .btn-action svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Estado vacio */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #64748b;
+    }
+
+    .empty-state-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 1rem;
+        color: #cbd5e1;
+    }
+
+    .empty-state p {
+        font-size: 0.95rem;
+    }
+
+    /* Paginacion */
+    .pagination-section {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1.25rem 2rem;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+        padding: 0.5rem 0.875rem;
+        background: #ffffff;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .pagination-btn:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #1e3a8a;
+    }
+
+    .pagination-info {
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+        .filters-form {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filter-actions {
+            grid-column: 1 / -1;
+        }
+
+        .filter-actions .btn-filter,
+        .filter-actions .btn-clear {
+            flex: 1;
+            text-align: center;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .users-header,
+        .filters-section,
+        .pagination-section {
+            padding-left: 1.25rem;
+            padding-right: 1.25rem;
+        }
+
+        .filters-form {
+            grid-template-columns: 1fr;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 0.75rem 0.625rem;
+        }
+
+        .users-table {
+            font-size: 0.8rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .users-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .pagination-section {
+            gap: 0.375rem;
+        }
+
+        .pagination-btn {
+            padding: 0.4rem 0.625rem;
+            font-size: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="users-container">
+    <div class="users-header">
+        <h1>Usuarios del sistema</h1>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <div class="filter-group">
+                <label for="id_name">Nombre</label>
+                <input
+                    type="text"
+                    name="name"
+                    id="id_name"
+                    value="{{ name_query }}"
+                    placeholder="Username, nombre o apellido..."
+                >
+            </div>
+
+            <div class="filter-group">
+                <label for="id_user_type">Tipo de usuario</label>
+                <select name="user_type" id="id_user_type">
+                    <option value="">Todos</option>
+                    {% for value, label in user_type_choices %}
+                        <option value="{{ value }}" {% if user_type_query == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="id_email">Correo</label>
+                <input
+                    type="text"
+                    name="email"
+                    id="id_email"
+                    value="{{ email_query }}"
+                    placeholder="Correo electronico..."
+                >
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn-filter">Filtrar</button>
+                <a href="{% url 'accounts:user_list' %}" class="btn-clear">Limpiar</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-wrapper">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Organizacion</th>
+                    <th>Tipo</th>
+                    <th>Super</th>
+                    <th>Accion</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td class="cell-id">{{ user.id }}</td>
+                    <td class="cell-username">{{ user.username }}</td>
+                    <td class="cell-email">{{ user.email }}</td>
+                    <td class="cell-org {% if not user.organization %}empty{% endif %}">
+                        {% if user.organization %}
+                            {{ user.organization.name }}
+                        {% else %}
+                            Sin organizacion
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="user-type-badge 
+                            {% if 'admin' in user.get_user_type_display|lower %}type-admin
+                            {% elif 'manager' in user.get_user_type_display|lower or 'gestor' in user.get_user_type_display|lower %}type-manager
+                            {% else %}type-user{% endif %}">
+                            {{ user.get_user_type_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="superuser-badge {% if user.is_superuser %}superuser-yes{% else %}superuser-no{% endif %}">
+                            {% if user.is_superuser %}
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            {% else %}
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'accounts:assign_organization' user.id %}" class="btn-action">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                            Gestionar org
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            <p>No hay usuarios registrados.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginacion -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination-section">
+        {% if page_obj.has_previous %}
+            <a href="{% update_query_params request page=1 %}" class="pagination-btn">Primera</a>
+            <a href="{% update_query_params request page=page_obj.previous_page_number %}" class="pagination-btn">Anterior</a>
+        {% endif %}
+
+        <span class="pagination-info">
+            Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="{% update_query_params request page=page_obj.next_page_number %}" class="pagination-btn">Siguiente</a>
+            <a href="{% update_query_params request page=page_obj.paginator.num_pages %}" class="pagination-btn">Ultima</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

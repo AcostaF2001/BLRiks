@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}Organizaciones{% endblock %}
+
+{% block extra_css %}
+<style>
+    .orgs-container {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .orgs-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .orgs-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-header {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-header:hover {
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .btn-header.primary {
+        background: #ffffff;
+        color: #1e3a8a;
+        border-color: #ffffff;
+    }
+
+    .btn-header.primary:hover {
+        background: #f0f9ff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-header svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* Tabla */
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .orgs-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .orgs-table thead {
+        background: #f1f5f9;
+    }
+
+    .orgs-table th {
+        padding: 0.875rem 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #1e3a8a;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        white-space: nowrap;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .orgs-table td {
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #475569;
+        vertical-align: middle;
+    }
+
+    .orgs-table tbody tr {
+        transition: background 0.15s ease;
+    }
+
+    .orgs-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .orgs-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Celdas especiales */
+    .cell-id {
+        font-weight: 600;
+        color: #1e3a8a;
+    }
+
+    .cell-name {
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .cell-slug {
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.8rem;
+        background: #f1f5f9;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        color: #64748b;
+    }
+
+    .cell-date {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+    /* Badge de estado */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.25rem 0.625rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .status-active {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-badge svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    /* Boton accion */
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.75rem;
+        background: #eff6ff;
+        color: #1e40af;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-action:hover {
+        background: #dbeafe;
+    }
+
+    .btn-action svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Estado vacio */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #64748b;
+    }
+
+    .empty-state-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 1rem;
+        color: #cbd5e1;
+    }
+
+    .empty-state p {
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state .btn-create {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.625rem 1.25rem;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .empty-state .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -8px rgba(30, 58, 138, 0.5);
+    }
+
+    .empty-state .btn-create svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+        .orgs-header {
+            padding: 1.25rem 1.5rem;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .orgs-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .btn-header {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .orgs-table th,
+        .orgs-table td {
+            padding: 0.75rem 0.625rem;
+        }
+
+        .orgs-table {
+            font-size: 0.8rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .orgs-header {
+            padding: 1rem 1.25rem;
+        }
+
+        .header-actions {
+            flex-direction: column;
+        }
+
+        .btn-header {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="orgs-container">
+    <div class="orgs-header">
+        <h1>Organizaciones</h1>
+        <div class="header-actions">
+            <a href="{% url 'accounts:user_list' %}" class="btn-header">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Ver usuarios
+            </a>
+            <a href="{% url 'accounts:organization_create' %}" class="btn-header primary">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Nueva organizacion
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-wrapper">
+        <table class="orgs-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Slug</th>
+                    <th>Estado</th>
+                    <th>Fecha creacion</th>
+                    <th>Accion</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for organization in organizations %}
+                <tr>
+                    <td class="cell-id">{{ organization.id }}</td>
+                    <td class="cell-name">{{ organization.name }}</td>
+                    <td><code class="cell-slug">{{ organization.slug }}</code></td>
+                    <td>
+                        {% if organization.is_active %}
+                        <span class="status-badge status-active">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Activa
+                        </span>
+                        {% else %}
+                        <span class="status-badge status-inactive">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Inactiva
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="cell-date">{{ organization.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <a href="{% url 'accounts:organization_update' organization.id %}" class="btn-action">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Editar
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                            <p>No hay organizaciones registradas.</p>
+                            <a href="{% url 'accounts:organization_create' %}" class="btn-create">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Crear primera organizacion
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,518 @@
+{% extends "base.html" %}
+{% load querystring_tags %}
+
+{% block title %}Archivos cargados{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Contenedor principal */
+    .files-container {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    /* Header de la página */
+    .files-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        padding: 1.5rem 2rem;
+    }
+
+    .files-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    /* Filtros */
+    .filters-section {
+        background: #f8fafc;
+        padding: 1.25rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .filters-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .filter-group label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #1e3a8a;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .filter-group input {
+        padding: 0.625rem 0.875rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        background: #ffffff;
+    }
+
+    .filter-group input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .filter-group input::placeholder {
+        color: #94a3b8;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .btn-filter {
+        padding: 0.625rem 1.25rem;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+    }
+
+    .btn-clear {
+        padding: 0.625rem 1.25rem;
+        background: #ffffff;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-clear:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #475569;
+    }
+
+    /* Tabla */
+    .table-wrapper {
+        overflow-x: auto;
+        padding: 0;
+    }
+
+    .files-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .files-table thead {
+        background: #f1f5f9;
+    }
+
+    .files-table th {
+        padding: 0.875rem 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #1e3a8a;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        white-space: nowrap;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .files-table td {
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #475569;
+        vertical-align: middle;
+    }
+
+    .files-table tbody tr {
+        transition: background 0.15s ease;
+    }
+
+    .files-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .files-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Celdas especiales */
+    .cell-id {
+        font-weight: 600;
+        color: #1e3a8a;
+    }
+
+    .cell-filename {
+        font-weight: 500;
+        color: #334155;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .cell-version {
+        display: inline-block;
+        background: #eff6ff;
+        color: #1e40af;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    /* Badges de estado */
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.625rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .status-PENDING {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-PROCESSING {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-completed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-error {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .cell-error {
+        color: #dc2626;
+        font-size: 0.8rem;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .cell-empty {
+        color: #94a3b8;
+    }
+
+    /* Acciones */
+    .actions-cell {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+    }
+
+    .btn-action {
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-action.primary {
+        background: #eff6ff;
+        color: #1e40af;
+    }
+
+    .btn-action.primary:hover {
+        background: #dbeafe;
+    }
+
+    .btn-action.secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-action.secondary:hover {
+        background: #e2e8f0;
+    }
+
+    /* Estado vacio */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #64748b;
+    }
+
+    .empty-state-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 1rem;
+        color: #cbd5e1;
+    }
+
+    .empty-state p {
+        font-size: 0.95rem;
+    }
+
+    /* Paginacion */
+    .pagination-section {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1.25rem 2rem;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+        padding: 0.5rem 0.875rem;
+        background: #ffffff;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .pagination-btn:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #1e3a8a;
+    }
+
+    .pagination-info {
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+        .files-header,
+        .filters-section,
+        .pagination-section {
+            padding-left: 1.25rem;
+            padding-right: 1.25rem;
+        }
+
+        .files-table th,
+        .files-table td {
+            padding: 0.75rem 0.625rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .filters-form {
+            flex-direction: column;
+        }
+
+        .filter-group {
+            min-width: 100%;
+        }
+
+        .filter-actions {
+            width: 100%;
+        }
+
+        .filter-actions .btn-filter,
+        .filter-actions .btn-clear {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Tabla responsive con scroll horizontal */
+        .files-table {
+            font-size: 0.8rem;
+        }
+
+        .files-table th,
+        .files-table td {
+            padding: 0.625rem 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .files-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .pagination-section {
+            gap: 0.375rem;
+        }
+
+        .pagination-btn {
+            padding: 0.4rem 0.625rem;
+            font-size: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="files-container">
+    <div class="files-header">
+        <h1>Archivos cargados</h1>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <div class="filter-group">
+                <label for="id_filename">Nombre de archivo</label>
+                <input
+                    type="text"
+                    name="filename"
+                    id="id_filename"
+                    value="{{ filename_query }}"
+                    placeholder="Buscar por nombre..."
+                >
+            </div>
+
+            <div class="filter-group">
+                <label for="id_username">Usuario</label>
+                <input
+                    type="text"
+                    name="username"
+                    id="id_username"
+                    value="{{ username_query }}"
+                    placeholder="Username, nombre o apellido..."
+                >
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn-filter">Filtrar</button>
+                <a href="{% url 'uploads:list' %}" class="btn-clear">Limpiar</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-wrapper">
+        <table class="files-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Archivo</th>
+                    <th>Version</th>
+                    <th>Estado</th>
+                    <th>Organizacion</th>
+                    <th>Usuario</th>
+                    <th>Fecha carga</th>
+                    <th>Filas</th>
+                    <th>Procesadas</th>
+                    <th>Error</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in files %}
+                <tr>
+                    <td class="cell-id">{{ item.id }}</td>
+                    <td class="cell-filename" title="{{ item.original_filename }}">{{ item.original_filename }}</td>
+                    <td><span class="cell-version">v{{ item.current_version }}</span></td>
+                    <td>
+                        <span class="status-badge 
+                            {% if item.status == 'FINISHED' %}status-completed
+                            {% elif item.status == 'PROCESSING' %}status-processing
+                            {% elif item.status == 'ERROR' %}status-error
+                            {% else %}status-pending{% endif %}">
+                            {{ item.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ item.organization.name }}</td>
+                    <td>{{ item.uploaded_by.username }}</td>
+                    <td>{{ item.uploaded_at|date:"d/m/Y H:i" }}</td>
+                    <td>{{ item.total_rows }}</td>
+                    <td>{{ item.processed_rows }}</td>
+                    <td>
+                        {% if item.error_message %}
+                            <span class="cell-error" title="{{ item.error_message }}">{{ item.error_message }}</span>
+                        {% else %}
+                            <span class="cell-empty">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="actions-cell">
+                            <a href="{% url 'results:uploaded_file_results' item.id %}" class="btn-action primary">
+                                Ver resultados
+                            </a>
+                            <a href="{% url 'uploads:reprocess' item.id %}" class="btn-action secondary">
+                                Reprocesar
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="11">
+                        <div class="empty-state">
+                            <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                            </svg>
+                            <p>No hay archivos cargados.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginacion -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination-section">
+        {% if page_obj.has_previous %}
+            <a href="{% update_query_params request page=1 %}" class="pagination-btn">Primera</a>
+            <a href="{% update_query_params request page=page_obj.previous_page_number %}" class="pagination-btn">Anterior</a>
+        {% endif %}
+
+        <span class="pagination-info">
+            Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="{% update_query_params request page=page_obj.next_page_number %}" class="pagination-btn">Siguiente</a>
+            <a href="{% update_query_params request page=page_obj.paginator.num_pages %}" class="pagination-btn">Ultima</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

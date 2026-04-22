@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+
+{% block title %}Subir archivo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-container {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .upload-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        padding: 1.5rem 2rem;
+        text-align: center;
+    }
+
+    .upload-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .upload-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.85;
+        font-size: 0.875rem;
+    }
+
+    .upload-body {
+        padding: clamp(1.5rem, 4vw, 2.5rem);
+    }
+
+    /* Zona de drop */
+    .dropzone {
+        border: 2px dashed #cbd5e1;
+        border-radius: 12px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        background: #f8fafc;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .dropzone:hover,
+    .dropzone.dragover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .dropzone-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 1rem;
+        color: #3b82f6;
+        pointer-events: none;
+    }
+
+    .dropzone-text {
+        color: #475569;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        pointer-events: none;
+    }
+
+    .dropzone-text strong {
+        color: #3b82f6;
+    }
+
+    .dropzone-hint {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        pointer-events: none;
+    }
+
+    /* Input oculto */
+    .hidden-file-input {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+    }
+
+    /* Archivo seleccionado */
+    .file-selected {
+        display: none;
+        align-items: center;
+        gap: 0.75rem;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 0.875rem 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .file-selected.visible {
+        display: flex;
+    }
+
+    .file-selected-icon {
+        width: 32px;
+        height: 32px;
+        color: #1e40af;
+        flex-shrink: 0;
+    }
+
+    .file-selected-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .file-selected-name {
+        font-weight: 600;
+        color: #1e3a8a;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .file-selected-size {
+        color: #64748b;
+        font-size: 0.75rem;
+    }
+
+    .file-selected-remove {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 0.25rem;
+        transition: color 0.2s ease;
+    }
+
+    .file-selected-remove:hover {
+        color: #dc2626;
+    }
+
+    /* Tipos de archivo permitidos */
+    .allowed-types {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .allowed-types h4 {
+        color: #1e3a8a;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .allowed-types-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .allowed-type {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: #ffffff;
+        border: 1px solid #e0f2fe;
+        padding: 0.35rem 0.625rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        color: #0369a1;
+        font-weight: 500;
+    }
+
+    .allowed-type svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Boton submit */
+    .btn-upload {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-upload:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -8px rgba(30, 58, 138, 0.5);
+    }
+
+    .btn-upload:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .btn-upload:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-upload svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Errores */
+    .form-errors {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        padding: 0.875rem 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-errors ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .form-errors li {
+        color: #dc2626;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .form-errors li::before {
+        content: "!";
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        background: #dc2626;
+        color: #ffffff;
+        border-radius: 50%;
+        font-size: 0.65rem;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+        .upload-header {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .upload-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .dropzone {
+            padding: 1.5rem 1rem;
+        }
+
+        .dropzone-icon {
+            width: 40px;
+            height: 40px;
+        }
+
+        .allowed-types-list {
+            gap: 0.375rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <div class="upload-header">
+        <h1>Subir archivo Excel</h1>
+        <p>Selecciona o arrastra un archivo para procesarlo</p>
+    </div>
+
+    <div class="upload-body">
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="form-errors">
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Input de Django (oculto con CSS) -->
+            <div class="hidden-file-input">
+                {{ form.original_file }}
+            </div>
+
+            <!-- Dropzone clickeable -->
+            <div class="dropzone" id="dropzone">
+                <svg class="dropzone-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                <p class="dropzone-text">
+                    Arrastra tu archivo aqui o <strong>haz clic para seleccionar</strong>
+                </p>
+                <p class="dropzone-hint">Tamano maximo: 10MB</p>
+            </div>
+
+            <!-- Archivo seleccionado -->
+            <div class="file-selected" id="fileSelected">
+                <svg class="file-selected-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <div class="file-selected-info">
+                    <div class="file-selected-name" id="fileName"></div>
+                    <div class="file-selected-size" id="fileSize"></div>
+                </div>
+                <button type="button" class="file-selected-remove" id="removeFile" title="Eliminar archivo">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Tipos permitidos -->
+            <div class="allowed-types">
+                <h4>Formatos permitidos</h4>
+                <div class="allowed-types-list">
+                    <span class="allowed-type">
+                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM8 17v-1h3v-2H8v-1h4v4H8zm6 0v-4h1.5v1.5H17V16h-1.5v1H14z"/></svg>
+                        .xlsx
+                    </span>
+                    <span class="allowed-type">
+                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM8 17v-1h3v-2H8v-1h4v4H8zm6 0v-4h1.5v1.5H17V16h-1.5v1H14z"/></svg>
+                        .xls
+                    </span>
+                    <span class="allowed-type">
+                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4z"/></svg>
+                        .csv
+                    </span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-upload" id="submitBtn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+                Subir archivo
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Usar el ID definido en el widget de Django: "fileInput"
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+    const fileSelected = document.getElementById('fileSelected');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeBtn = document.getElementById('removeFile');
+
+    // Verificar que el input existe
+    if (!fileInput) {
+        console.error('No se encontro el input con id="fileInput". Verifica el forms.py');
+        return;
+    }
+
+    // Click en dropzone abre el selector de archivos
+    dropzone.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    // Prevenir comportamiento por defecto en todo el documento
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        document.addEventListener(eventName, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    // Highlight en dragover
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, function() {
+            dropzone.classList.add('dragover');
+        }, false);
+    });
+
+    // Quitar highlight
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, function() {
+            dropzone.classList.remove('dragover');
+        }, false);
+    });
+
+    // Drop de archivo
+    dropzone.addEventListener('drop', function(e) {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            // Asignar archivo al input
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(files[0]);
+            fileInput.files = dataTransfer.files;
+            
+            // Actualizar UI
+            updateFileDisplay(files[0]);
+        }
+    }, false);
+
+    // Cambio en el input (click normal)
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files && fileInput.files.length > 0) {
+            updateFileDisplay(fileInput.files[0]);
+        }
+    });
+
+    // Funcion para mostrar el archivo seleccionado
+    function updateFileDisplay(file) {
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        fileSelected.classList.add('visible');
+        dropzone.style.display = 'none';
+    }
+
+    // Formatear tamano de archivo
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Eliminar archivo seleccionado
+    removeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Limpiar input
+        fileInput.value = '';
+        
+        // Restaurar UI
+        fileSelected.classList.remove('visible');
+        dropzone.style.display = 'block';
+    });
+});
+</script>
+{% endblock %}

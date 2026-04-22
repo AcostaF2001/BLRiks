@@ -1,0 +1,354 @@
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .register-container {
+        background: #ffffff;
+        padding: clamp(1.5rem, 4vw, 2.5rem);
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        width: 100%;
+        max-width: 650px;
+    }
+
+    .register-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .register-header h1 {
+        color: #1e3a8a;
+        font-size: clamp(1.5rem, 4vw, 1.875rem);
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .register-header p {
+        color: #64748b;
+        font-size: 0.875rem;
+    }
+
+    /* Secciones */
+    .form-section {
+        margin-bottom: 1.25rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .form-section:last-of-type {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .form-section-title {
+        color: #1e3a8a;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Grid de campos */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        color: #1e3a8a;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+        font-size: 0.8rem;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.65rem 0.875rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        background: #f8fafc;
+        color: #334155;
+    }
+
+    .form-group select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        padding-right: 2rem;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .form-group input::placeholder {
+        color: #94a3b8;
+    }
+
+    /* Texto de ayuda */
+    .helptext {
+        color: #94a3b8;
+        font-size: 0.7rem;
+        margin-top: 0.3rem;
+        line-height: 1.3;
+    }
+
+    /* Errores */
+    .errorlist {
+        list-style: none;
+        padding: 0;
+        margin: 0.3rem 0 0 0;
+    }
+
+    .errorlist li {
+        color: #dc2626;
+        font-size: 0.7rem;
+    }
+
+    /* Info de contraseña */
+    .password-info {
+        grid-column: 1 / -1;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .password-info ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.25rem 1rem;
+    }
+
+    .password-info li {
+        color: #475569;
+        font-size: 0.7rem;
+        padding-left: 0.875rem;
+        position: relative;
+    }
+
+    .password-info li::before {
+        content: "•";
+        color: #3b82f6;
+        position: absolute;
+        left: 0;
+        font-weight: bold;
+    }
+
+    /* Botón */
+    .btn-register {
+        width: 100%;
+        padding: 0.875rem;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 1.25rem;
+    }
+
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -8px rgba(30, 58, 138, 0.5);
+    }
+
+    .btn-register:active {
+        transform: translateY(0);
+    }
+
+    /* Footer */
+    .register-footer {
+        text-align: center;
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .register-footer p {
+        color: #64748b;
+        font-size: 0.875rem;
+    }
+
+    .register-footer a {
+        color: #3b82f6;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .register-footer a:hover {
+        color: #1e3a8a;
+        text-decoration: underline;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group.full-width {
+            grid-column: 1;
+        }
+
+        .password-info {
+            grid-column: 1;
+        }
+
+        .password-info ul {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .register-container {
+            border-radius: 12px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.6rem 0.75rem;
+            font-size: 16px; /* Evita zoom en iOS */
+        }
+
+        .btn-register {
+            padding: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-header">
+        <h1>Crear Cuenta</h1>
+        <p>Completa el formulario para registrarte</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Información Personal -->
+        <div class="form-section">
+            <h3 class="form-section-title">Información Personal</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_first_name">Nombre</label>
+                    {{ form.first_name }}
+                    {% for error in form.first_name.errors %}<ul class="errorlist"><li>{{ error }}</li></ul>{% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="id_last_name">Apellidos</label>
+                    {{ form.last_name }}
+                    {% for error in form.last_name.errors %}<ul class="errorlist"><li>{{ error }}</li></ul>{% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="id_username">Usuario</label>
+                    {{ form.username }}
+                    {% for error in form.username.errors %}<ul class="errorlist"><li>{{ error }}</li></ul>{% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="id_email">Email</label>
+                    {{ form.email }}
+                    {% for error in form.email.errors %}<ul class="errorlist"><li>{{ error }}</li></ul>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Organización -->
+        <div class="form-section">
+            <h3 class="form-section-title">Organización</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_user_type">Tipo de usuario</label>
+                    {{ form.user_type }}
+                    {% for error in form.user_type.errors %}<ul class="errorlist"><li>{{ error }}</li></ul>{% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="id_organization">Organización existente</label>
+                    {{ form.organization }}
+                    {% for error in form.organization.errors %}<ul class="errorlist"><li>{{ error }}</li></ul>{% endfor %}
+                </div>
+                <div class="form-group full-width">
+                    <label for="id_new_organization">Nueva organización</label>
+                    {{ form.new_organization }}
+                    <span class="helptext">Si no seleccionas una existente, puedes crear una nueva.</span>
+                    {% for error in form.new_organization.errors %}<ul class="errorlist"><li>{{ error }}</li></ul>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Seguridad -->
+        <div class="form-section">
+            <h3 class="form-section-title">Seguridad</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_password1">Contraseña</label>
+                    {{ form.password1 }}
+                    {% for error in form.password1.errors %}<ul class="errorlist"><li>{{ error }}</li></ul>{% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="id_password2">Confirmar contraseña</label>
+                    {{ form.password2 }}
+                    {% for error in form.password2.errors %}<ul class="errorlist"><li>{{ error }}</li></ul>{% endfor %}
+                </div>
+                <div class="password-info">
+                    <ul>
+                        <li>Mínimo 8 caracteres</li>
+                        <li>No solo números</li>
+                        <li>No usar datos personales</li>
+                        <li>No usar claves comunes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-register">Crear mi cuenta</button>
+    </form>
+
+    <div class="register-footer">
+        <p>¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a></p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+
+{% block title %}Reglas de procesamiento{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rules-container {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .rules-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .rules-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .rules-header h1 svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .btn-create {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.6rem 1.25rem;
+        background: #ffffff;
+        color: #1e3a8a;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-create:hover {
+        background: #f0f9ff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-create svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Tabla */
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .rules-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .rules-table thead {
+        background: #f1f5f9;
+    }
+
+    .rules-table th {
+        padding: 0.875rem 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #1e3a8a;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        white-space: nowrap;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .rules-table td {
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #475569;
+        vertical-align: middle;
+    }
+
+    .rules-table tbody tr {
+        transition: background 0.15s ease;
+    }
+
+    .rules-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .rules-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Celdas especiales */
+    .cell-id {
+        font-weight: 600;
+        color: #1e3a8a;
+    }
+
+    .cell-org {
+        font-weight: 500;
+        color: #334155;
+    }
+
+    /* Badge de operacion */
+    .operation-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.3rem 0.625rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .op-sum {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .op-multiply {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .op-subtract {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .op-divide {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .op-default {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .operation-badge svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    /* Valor de ajuste */
+    .adjustment-value {
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.85rem;
+        background: #f1f5f9;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        color: #1e3a8a;
+        font-weight: 600;
+    }
+
+    /* Badge de estado */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+    }
+
+    .status-active {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-badge svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Fecha */
+    .cell-date {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+    /* Boton accion */
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.75rem;
+        background: #eff6ff;
+        color: #1e40af;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn-action:hover {
+        background: #dbeafe;
+    }
+
+    .btn-action svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Estado vacio */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #64748b;
+    }
+
+    .empty-state-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 1rem;
+        color: #cbd5e1;
+    }
+
+    .empty-state p {
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state .btn-empty-create {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.625rem 1.25rem;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .empty-state .btn-empty-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -8px rgba(30, 58, 138, 0.5);
+    }
+
+    .empty-state .btn-empty-create svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+        .rules-header {
+            padding: 1.25rem 1.5rem;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .rules-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .btn-create {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .rules-table th,
+        .rules-table td {
+            padding: 0.75rem 0.625rem;
+        }
+
+        .rules-table {
+            font-size: 0.8rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .rules-header {
+            padding: 1rem 1.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rules-container">
+    <div class="rules-header">
+        <h1>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            Reglas de procesamiento
+        </h1>
+        <a href="{% url 'rules:rule_create' %}" class="btn-create">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nueva regla
+        </a>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-wrapper">
+        <table class="rules-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Organizacion</th>
+                    <th>Operacion</th>
+                    <th>Ajuste</th>
+                    <th>Activa</th>
+                    <th>Actualizada</th>
+                    <th>Accion</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rule in rules %}
+                <tr>
+                    <td class="cell-id">{{ rule.id }}</td>
+                    <td class="cell-org">{{ rule.organization.name }}</td>
+                    <td>
+                        <span class="operation-badge 
+                            {% if 'sum' in rule.operation_type|lower or 'add' in rule.operation_type|lower %}op-sum
+                            {% elif 'mult' in rule.operation_type|lower %}op-multiply
+                            {% elif 'sub' in rule.operation_type|lower or 'rest' in rule.operation_type|lower %}op-subtract
+                            {% elif 'div' in rule.operation_type|lower %}op-divide
+                            {% else %}op-default{% endif %}">
+                            {% if 'sum' in rule.operation_type|lower or 'add' in rule.operation_type|lower %}
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            {% elif 'mult' in rule.operation_type|lower %}
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            {% elif 'sub' in rule.operation_type|lower or 'rest' in rule.operation_type|lower %}
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                            {% elif 'div' in rule.operation_type|lower %}
+                                <svg fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="6" r="2"/><path d="M4 12h16"/><circle cx="12" cy="18" r="2"/></svg>
+                            {% endif %}
+                            {{ rule.operation_type }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="adjustment-value">{{ rule.adjustment_value }}</span>
+                    </td>
+                    <td>
+                        <span class="status-badge {% if rule.is_active %}status-active{% else %}status-inactive{% endif %}">
+                            {% if rule.is_active %}
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            {% else %}
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td class="cell-date">{{ rule.updated_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <a href="{% url 'rules:rule_update' rule.id %}" class="btn-action">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Editar
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <p>No hay reglas registradas.</p>
+                            <a href="{% url 'rules:rule_create' %}" class="btn-empty-create">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Crear primera regla
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

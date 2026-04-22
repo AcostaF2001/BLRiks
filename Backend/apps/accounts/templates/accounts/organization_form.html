@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .org-form-container {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        max-width: 550px;
+        margin: 0 auto;
+    }
+
+    .org-form-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        padding: 1.5rem 2rem;
+        text-align: center;
+    }
+
+    .org-form-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .org-form-header h1 svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .org-form-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.85;
+        font-size: 0.875rem;
+    }
+
+    .org-form-body {
+        padding: clamp(1.5rem, 4vw, 2.5rem);
+    }
+
+    /* Mensajes */
+    .messages-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.5rem 0;
+    }
+
+    .messages-list li {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .messages-list li.success {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+
+    .messages-list li.error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .messages-list li.warning {
+        background: #fffbeb;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+
+    .messages-list li.info {
+        background: #eff6ff;
+        color: #1e40af;
+        border: 1px solid #bfdbfe;
+    }
+
+    .messages-list li::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .messages-list li.success::before {
+        background: #10b981;
+    }
+
+    .messages-list li.error::before {
+        background: #ef4444;
+    }
+
+    .messages-list li.warning::before {
+        background: #f59e0b;
+    }
+
+    .messages-list li.info::before {
+        background: #3b82f6;
+    }
+
+    /* Formulario */
+    .form-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .form-group label {
+        color: #1e3a8a;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        background: #f8fafc;
+        color: #334155;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: #94a3b8;
+    }
+
+    .form-group select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        padding-right: 2.5rem;
+    }
+
+    /* Checkbox estilizado */
+    .form-group-checkbox {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.75rem;
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .form-group-checkbox input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: #3b82f6;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .form-group-checkbox label {
+        cursor: pointer;
+        margin: 0;
+    }
+
+    .form-group-checkbox .checkbox-description {
+        font-size: 0.75rem;
+        color: #64748b;
+        font-weight: 400;
+        display: block;
+        margin-top: 0.125rem;
+    }
+
+    /* Texto de ayuda */
+    .helptext {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Errores */
+    .errorlist {
+        list-style: none;
+        padding: 0;
+        margin: 0.35rem 0 0 0;
+    }
+
+    .errorlist li {
+        color: #dc2626;
+        font-size: 0.75rem;
+    }
+
+    /* Botones */
+    .form-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+    }
+
+    .btn-save {
+        flex: 1;
+        padding: 0.875rem 1.5rem;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -8px rgba(30, 58, 138, 0.5);
+    }
+
+    .btn-save:active {
+        transform: translateY(0);
+    }
+
+    .btn-save svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .btn-cancel {
+        padding: 0.875rem 1.5rem;
+        background: #ffffff;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-cancel:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #475569;
+    }
+
+    .btn-cancel svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 500px) {
+        .org-form-header {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .org-form-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-cancel {
+            order: 2;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="org-form-container">
+    <div class="org-form-header">
+        <h1>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            {{ title }}
+        </h1>
+        <p>{% if 'Crear' in title or 'Nueva' in title %}Completa los datos para registrar la organizacion{% else %}Modifica los datos de la organizacion{% endif %}</p>
+    </div>
+
+    <div class="org-form-body">
+        {% if messages %}
+        <ul class="messages-list">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-grid">
+                {% for field in form %}
+                    {% if field.field.widget.input_type == 'checkbox' %}
+                    <div class="form-group form-group-checkbox">
+                        {{ field }}
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.help_text %}
+                                <span class="checkbox-description">{{ field.help_text }}</span>
+                            {% endif %}
+                        </label>
+                    </div>
+                    {% else %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <span class="helptext">{{ field.help_text }}</span>
+                        {% endif %}
+                        {% if field.errors %}
+                            <ul class="errorlist">
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Guardar
+                </button>
+                <a href="{% url 'accounts:organization_list' %}" class="btn-cancel">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Volver
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

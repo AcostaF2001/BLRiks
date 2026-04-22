@@ -1,0 +1,83 @@
+version: "3.9"
+
+services:
+  # ==========================================================
+  # POSTGRESQL
+  # ==========================================================
+  # Base de datos relacional principal del sistema.
+  # Aquí se almacenan usuarios, organizaciones, archivos cargados,
+  # configuraciones y trazabilidad del flujo.
+  postgres:
+    image: postgres:16
+    container_name: assessment_postgres
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      # Exponemos PostgreSQL en el puerto 5433 del host
+      # para evitar conflictos con instalaciones locales previas.
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # ==========================================================
+  # REDIS
+  # ==========================================================
+  # Broker para Celery.
+  # Se usa para encolar y despachar tareas asíncronas.
+  redis:
+    image: redis:7
+    container_name: assessment_redis
+    restart: always
+    ports:
+      - "${REDIS_PORT}:6379"
+
+  # ==========================================================
+  # DJANGO WEB
+  # ==========================================================
+  # Servicio principal del backend Django.
+  # Expone la aplicación web y las rutas del proyecto.
+  web:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: assessment_web
+    restart: always
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .env
+    volumes:
+      # Montamos el código fuente para reflejar cambios en caliente en desarrollo.
+      - ./Backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  # ==========================================================
+  # CELERY WORKER
+  # ==========================================================
+  # Worker encargado del procesamiento asíncrono.
+  # Toma las tareas enviadas desde Django y las ejecuta fuera del request HTTP.
+  worker:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: assessment_worker
+    restart: always
+    command: celery -A config worker -l info
+    env_file:
+      - .env
+    volumes:
+      - ./Backend:/app
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:
