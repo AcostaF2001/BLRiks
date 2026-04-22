@@ -35,9 +35,9 @@ La solución fue construida con:
 - Registro de archivos en PostgreSQL
 - Asociación automática con usuario y organización
 - Estados del proceso:
-  - `PENDING`
-  - `PROCESSING`
-  - `FINISHED`
+  - `PENDIENTE`
+  - `PROCESANDO`
+  - `FINALIZADO`
   - `ERROR`
 
 ### 3. Procesamiento asíncrono
