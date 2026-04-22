@@ -717,20 +717,6 @@ docker compose up --build -d
 - El versionamiento asegura trazabilidad y reproceso controlado
 - Swagger permite inspeccionar la API de manera documentada
 
----
-
-## Mejoras futuras sugeridas
-
-- interfaz frontend dedicada en React
-- filtros adicionales por estado y fecha
-- exportación de resultados
-- creación de usuarios desde `ADMIN_ORG`
-- mejor sistema de permisos por módulo
-- dashboard con métricas por organización
-- pruebas automáticas unitarias e integración
-- despliegue productivo con Gunicorn/Nginx
-
----
 
 ## Estado actual del proyecto
 
@@ -752,4 +738,4 @@ El proyecto ya permite:
 
 ## Autor
 
-Proyecto desarrollado como solución para assessment técnico Full Stack / DevOps.
+Proyecto desarrollado por Andres Felipe Acosta Lozada.
