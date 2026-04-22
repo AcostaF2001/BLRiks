@@ -1,4 +1,4 @@
-# Assessment Técnico Full Stack / DevOps
+# PRUEBA TECNICA Full Stack
 
 ## Descripción general
 
